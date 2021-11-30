@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Twilio x Deepgram Call Transcripts</title>
+    <style>
+      * { margin: 0; padding: 0; font-family: sans-serif; }
+      #app { display: grid; grid-template-columns: 1fr 1fr; padding: 1em; gap: 2em; }
+      input { grid-column: 1 / span 2; font-size: 1em; padding: 0.5em; }
+      li { list-style: none; margin-bottom: 1em; }
+      #results li { cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <input type="text" placeholder="Search term" v-model="filter.term" @keyup="search" />
+      <ol id="results">
+        <li v-for="result in filter.results" @click="calls.selected = result">
+          <p><b>{{ result.item.Caller }} on {{ result.item.date }}</b></p>
+          <p v-for="match in result.matches">{{ match.value }}</p>
+        </li>
+      </ol>
+
+      <ol id="full-call" v-if="calls.selected">
+        <li v-for="utterance in calls.selected.item.utterances">
+          <small>{{ utterance.channel == 0 ? 'Receiver' : 'Caller' }}</small>
+          <p>{{ utterance.transcript }}</p>
+        </li>
+      </ol>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.4.6"></script>
+    <script>
+      const app = new Vue({
+        el: '#app',
+        data: {
+          fuse: false,
+          calls: {
+            all: [],
+            selected: false
+          },
+          filter: {
+            term: '',
+            results: []
+          }
+        },
+        async created() {
+          this.calls.all = await fetch('/recordings').then(r => r.json())
+          this.fuse = new Fuse(this.calls.all, {
+            keys: ['Caller', 'utterances.transcript'],
+            includeMatches: true,
+            threshold: 0.5
+          })
+        },
+        methods: {
+          search() {
+            this.filter.results = this.fuse.search(this.filter.term)
+          }
+        }
+      })
+    </script>
+  </body>
+</html>
