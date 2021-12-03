@@ -1,6 +1,6 @@
 # Searchable Phone Call Dashboard with Twilio and Deepgram
 
-Store Twilio phone call transcripts and search with a web dashboard.
+Store Twilio phone call transcripts and search with a web dashboard. This project accompanies a blog post available at <https://developers.deepgram.com/blog/2021/12/twilio-crm-log-js/>
 
 ## Setup
 
